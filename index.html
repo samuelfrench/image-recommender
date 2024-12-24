@@ -3,50 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Recommender</title>
+    <title>Image Object Detection</title>
 </head>
 <body>
-    <h1>Image Recommender</h1>
+    <h1>Image Object Detection</h1>
     <img id="image" src="" alt="Image will appear here" style="max-width: 80vw; max-height: 80vh; min-height: 80vh;">
     <br><br>
     <button onclick="sendFeedback(1)">Thumbs Up</button>
     <button onclick="sendFeedback(0)">Thumbs Down</button>
+    <button onclick="analyzeImage()">Analyze Image</button>
+    <div id="analysis-result" style="margin-top: 20px; font-size: 1.2em; color: #333;"></div>
     <script>
         let currentImage = "";
 
-        // Fetch a random image
         async function fetchImage() {
-            const response = await fetch('http://127.0.0.1:5000/get-image');
+            const response = await fetch('http://127.0.0.1:5000/get-image', {
+                method: 'GET',
+                credentials: 'include'
+            });
             const data = await response.json();
             currentImage = data.image;
             document.getElementById("image").src = `reddit-pics/${currentImage}`;
+            document.getElementById("analysis-result").innerText = "";
         }
 
-        // Send feedback
         async function sendFeedback(like) {
             await fetch('http://127.0.0.1:5000/send-feedback', {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image: currentImage, like: like })
             });
             fetchRecommendedImage();
         }
 
-        // Fetch recommended image
         async function fetchRecommendedImage() {
-            const response = await fetch('http://127.0.0.1:5000/recommend-next');
+            const response = await fetch('http://127.0.0.1:5000/recommend-next', {
+                credentials: 'include'
+            });
             const data = await response.json();
             if (data.image) {
                 currentImage = data.image;
                 document.getElementById("image").src = `reddit-pics/${currentImage}`;
+                document.getElementById("analysis-result").innerText = "";
             } else {
                 alert("No more images to recommend.");
             }
         }
 
-        // Initialize
+        async function analyzeImage() {
+            if (!currentImage) {
+                alert("No image to analyze.");
+                return;
+            }
+
+            const formData = new FormData();
+            const imagePath = `reddit-pics/${currentImage}`;
+            const imageFile = await fetch(imagePath).then((res) => res.blob());
+
+            formData.append("image", imageFile, currentImage);
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/analyze-image', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.error) {
+                    document.getElementById("analysis-result").innerText = `Error: ${data.error}`;
+                } else {
+                    const predictions = data.predictions
+                        .map(
+                            pred => 
+                                `<span style="cursor: pointer; color: blue;" onclick="fetchSimilarImage('${pred.label}')">
+                                    ${pred.description} (${(pred.confidence * 100).toFixed(2)}%)
+                                </span>`
+                        )
+                        .join('<br>');
+                    document.getElementById("analysis-result").innerHTML = `<strong>Objects detected:</strong><br>${predictions}`;
+                }
+            } catch (error) {
+                document.getElementById("analysis-result").innerText = `Error analyzing image: ${error.message}`;
+            }
+        }
+
+        async function fetchSimilarImage(label) {
+            const response = await fetch(`http://127.0.0.1:5000/get-similar-image/${label}`, {
+                credentials: 'include'
+            });
+            const data = await response.json();
+
+            if (data.image) {
+                currentImage = data.image;
+                document.getElementById("image").src = `reddit-pics/${currentImage}`;
+                document.getElementById("analysis-result").innerText = "";
+            } else {
+                alert(data.message || "No similar images found.");
+            }
+        }
+
         fetchImage();
     </script>
 </body>
 </html>
-
