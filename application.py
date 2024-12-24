@@ -60,7 +60,7 @@ embeddings = np.array(list(image_embeddings.values()))
 # Store indexed results for each label
 label_to_images = defaultdict(list)
 
-def initialize_label_to_images(file_path='label_to_images.json'):
+def initialize_label_to_images(file_path='label_to_images_human_readable.json'):
     """
     Load the label-to-images dictionary from a JSON file.
     """
@@ -159,38 +159,38 @@ def recommend():
     response.set_cookie('session_id', session.id)
     return response
 
+def format_label(label):
+    """Convert label ID to human-readable text"""
+    # Remove ID prefix and replace underscores
+    text = label.split('_', 1)[-1].replace('_', ' ')
+    return text.title()
+
 @application.route('/analyze-image', methods=['POST'])
 def analyze_image():
     if 'image' not in request.files:
         return jsonify({'error': 'No image file uploaded'}), 400
 
     image_file = request.files['image']
-    image_path = os.path.join('/tmp', image_file.filename)
-    image_file.save(image_path)
+    image_name = image_file.filename
 
     try:
-        img = load_img(image_path, target_size=(224, 224))
-        img_array = img_to_array(img)
-        img_array = np.expand_dims(img_array, axis=0)
-        img_array = preprocess_input(img_array)
-
-        predictions = mobilenet_model.predict(img_array)
-        decoded_predictions = decode_predictions(predictions, top=5)[0]
-
-        image_name = image_file.filename
-        results = [
-            {"label": label, "description": description, "confidence": float(confidence)}
-            for (label, description, confidence) in decoded_predictions
-        ]
-        for prediction in results:
-            label_to_images[prediction["label"]].append(image_name)
-
-        return jsonify({'predictions': results})
+        # Get predictions from pre-computed labels
+        predictions = []
+        for label, images in label_to_images.items():
+            if image_name in images:
+                predictions.append({
+                    "label": label,
+                    "description": format_label(label),
+                    "confidence": 1.0
+                })
+        
+        if not predictions:
+            return jsonify({'error': 'No predictions found for image'}), 404
+            
+        return jsonify({'predictions': predictions[:5]})
+        
     except Exception as e:
         return jsonify({'error': f"Failed to analyze image: {str(e)}"}), 500
-    finally:
-        if os.path.exists(image_path):
-            os.remove(image_path)
 
 @application.route('/get-similar-image/<label>', methods=['GET'])
 def get_similar_image(label):

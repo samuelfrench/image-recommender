@@ -9,9 +9,9 @@ import numpy as np
 # Initialize MobileNetV2 model
 mobilenet_model = MobileNetV2(weights='imagenet')
 
-def generate_label_to_images(output_file='label_to_images.json'):
+def generate_label_to_images(output_file='label_to_images_human_readable.json'):
     """
-    Process images and save label-to-image mappings to a JSON file.
+    Process images and save human-readable label-to-image mappings to a JSON file.
     """
     print("Processing images to generate label-to-image mappings...")
     pics_dir = 'reddit-pics'
@@ -36,13 +36,13 @@ def generate_label_to_images(output_file='label_to_images.json'):
 
             for (label, description, confidence) in decoded_predictions:
                 if confidence > 0.1:  # Only store predictions with >10% confidence
-                    if label not in label_to_images:
-                        label_to_images[label] = []
-                    label_to_images[label].append(image_name)
+                    if description not in label_to_images:
+                        label_to_images[description] = []
+                    label_to_images[description].append(image_name)
         except Exception as e:
             print(f"Error processing {image_name}: {e}")
 
-    # Save the label-to-images mapping to a JSON file
+    # Save the human-readable label-to-images mapping to a JSON file
     with open(output_file, 'w') as f:
         json.dump(label_to_images, f, indent=4)
     
