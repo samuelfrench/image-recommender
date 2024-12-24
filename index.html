@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Recommender</title>
+</head>
+<body>
+    <h1>Image Recommender</h1>
+    <img id="image" src="" alt="Image will appear here" style="max-width: 100%; height: auto;">
+    <br><br>
+    <button onclick="sendFeedback(1)">Thumbs Up</button>
+    <button onclick="sendFeedback(0)">Thumbs Down</button>
+    <script>
+        let currentImage = "";
+
+        // Fetch a random image
+        async function fetchImage() {
+            const response = await fetch('http://127.0.0.1:5000/get-image');
+            const data = await response.json();
+            currentImage = data.image;
+            document.getElementById("image").src = `g-images/${currentImage}`;
+        }
+
+        // Send feedback
+        async function sendFeedback(like) {
+            await fetch('http://127.0.0.1:5000/send-feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image: currentImage, like: like })
+            });
+            fetchRecommendedImage();
+        }
+
+        // Fetch recommended image
+        async function fetchRecommendedImage() {
+            const response = await fetch('http://127.0.0.1:5000/recommend-next');
+            const data = await response.json();
+            if (data.image) {
+                currentImage = data.image;
+                document.getElementById("image").src = `g-images/${currentImage}`;
+            } else {
+                alert("No more images to recommend.");
+            }
+        }
+
+        // Initialize
+        fetchImage();
+    </script>
+</body>
+</html>
+
