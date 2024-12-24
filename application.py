@@ -8,6 +8,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input, decode_predictions
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
+from tqdm import tqdm
 import random
 import uuid
 import os
@@ -57,6 +58,36 @@ embeddings = np.array(list(image_embeddings.values()))
 
 # Store indexed results for each label
 label_to_images = defaultdict(list)
+
+def initialize_label_to_images():
+    print("Initializing label_to_images dictionary...")
+    pics_dir = 'reddit-pics'
+    if not os.path.exists(pics_dir):
+        print(f"Error: {pics_dir} directory not found")
+        return
+
+    for image_name in tqdm(os.listdir(pics_dir)):
+        if not image_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+            continue
+            
+        try:
+            image_path = os.path.join(pics_dir, image_name)
+            img = load_img(image_path, target_size=(224, 224))
+            img_array = img_to_array(img)
+            img_array = np.expand_dims(img_array, axis=0)
+            img_array = preprocess_input(img_array)
+
+            predictions = mobilenet_model.predict(img_array)
+            decoded_predictions = decode_predictions(predictions, top=5)[0]
+
+            for (label, description, confidence) in decoded_predictions:
+                if confidence > 0.1:  # Only store predictions with >10% confidence
+                    label_to_images[label].append(image_name)
+        except Exception as e:
+            print(f"Error processing {image_name}: {str(e)}")
+
+    print(f"Processed {len(os.listdir(pics_dir))} images")
+    print(f"Found {len(label_to_images)} unique labels")
 
 # Initialize Flask app
 application = Flask(__name__)
@@ -194,4 +225,5 @@ def get_similar_image(label):
     return response
 
 if __name__ == '__main__':
+    initialize_label_to_images()
     application.run(debug=True)
