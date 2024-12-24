@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Image Recommender</h1>
-    <img id="image" src="" alt="Image will appear here" style="max-width: 100%; height: auto;">
+    <img id="image" src="" alt="Image will appear here" style="max-width: 80vw; max-height: 80vh;">
     <br><br>
     <button onclick="sendFeedback(1)">Thumbs Up</button>
     <button onclick="sendFeedback(0)">Thumbs Down</button>
@@ -19,7 +19,7 @@
             const response = await fetch('http://127.0.0.1:5000/get-image');
             const data = await response.json();
             currentImage = data.image;
-            document.getElementById("image").src = `g-images/${currentImage}`;
+            document.getElementById("image").src = `reddit-pics/${currentImage}`;
         }
 
         // Send feedback
@@ -38,7 +38,7 @@
             const data = await response.json();
             if (data.image) {
                 currentImage = data.image;
-                document.getElementById("image").src = `g-images/${currentImage}`;
+                document.getElementById("image").src = `reddit-pics/${currentImage}`;
             } else {
                 alert("No more images to recommend.");
             }

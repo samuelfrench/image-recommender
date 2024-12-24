@@ -6,7 +6,7 @@ from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.models import Model
 
 # Path to your folder of images
-IMAGE_FOLDER = '/home/sam/g-images'
+IMAGE_FOLDER = '/home/sam/image_recommender/reddit-pics'
 
 # Load the pre-trained ResNet model
 base_model = ResNet50(weights='imagenet', include_top=False, pooling='avg')
