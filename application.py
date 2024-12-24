@@ -58,23 +58,23 @@ image_names = list(image_embeddings.keys())
 embeddings = np.array(list(image_embeddings.values()))
 
 # Store indexed results for each label
-label_to_images = defaultdict(list)
+label_to_images_with_confidence = {}
 
-def initialize_label_to_images(file_path='label_to_images_human_readable.json'):
+def initialize_label_to_images(file_path='label_to_images_with_confidence.json'):
     """
     Load the label-to-images dictionary from a JSON file.
     """
-    global label_to_images
+    global label_to_images_with_confidence
 
     if not os.path.exists(file_path):
         print(f"Error: {file_path} not found. Please run the label generation script first.")
         return
 
     with open(file_path, 'r') as f:
-        label_to_images = json.load(f)
+        label_to_images_with_confidence = json.load(f)
     
     print(f"Loaded label-to-image mappings from {file_path}")
-    print(f"Found {len(label_to_images)} unique labels")
+    print(f"Found {len(label_to_images_with_confidence)} unique labels")
 
 # Initialize Flask app
 application = Flask(__name__)
@@ -161,9 +161,7 @@ def recommend():
 
 def format_label(label):
     """Convert label ID to human-readable text"""
-    # Remove ID prefix and replace underscores
-    text = label.split('_', 1)[-1].replace('_', ' ')
-    return text.title()
+    return label.title()
 
 @application.route('/analyze-image', methods=['POST'])
 def analyze_image():
@@ -176,18 +174,21 @@ def analyze_image():
     try:
         # Get predictions from pre-computed labels
         predictions = []
-        for label, images in label_to_images.items():
-            if image_name in images:
-                predictions.append({
-                    "label": label,
-                    "description": format_label(label),
-                    "confidence": 1.0
-                })
+        for label, images in label_to_images_with_confidence.items():
+            for entry in images:
+                if entry["image"] == image_name:
+                    predictions.append({
+                        "label": label,
+                        "description": format_label(label),
+                        "confidence": entry["confidence"]
+                    })
         
         if not predictions:
             return jsonify({'error': 'No predictions found for image'}), 404
             
-        return jsonify({'predictions': predictions[:5]})
+        # Return the top 5 predictions sorted by confidence
+        predictions = sorted(predictions, key=lambda x: x["confidence"], reverse=True)[:5]
+        return jsonify({'predictions': predictions})
         
     except Exception as e:
         return jsonify({'error': f"Failed to analyze image: {str(e)}"}), 500
@@ -196,15 +197,18 @@ def analyze_image():
 def get_similar_image(label):
     session = get_or_create_session(request.cookies.get('session_id'))
     
-    similar_images = label_to_images.get(label, [])
+    similar_images = label_to_images_with_confidence.get(label, [])
     if not similar_images:
         return jsonify({'message': 'No similar images found'}), 200
 
-    unviewed_images = list(set(similar_images) - session.viewed_images)
+    # Sort similar images by confidence, descending
+    similar_images = sorted(similar_images, key=lambda x: x["confidence"], reverse=True)
+    unviewed_images = [entry["image"] for entry in similar_images if entry["image"] not in session.viewed_images]
+    
     if not unviewed_images:
         return jsonify({'message': 'No unviewed similar images found'}), 200
 
-    random_image = random.choice(unviewed_images)
+    random_image = unviewed_images[0]  # Get the highest-confidence unviewed image
     session.viewed_images.add(random_image)
     
     response = jsonify({'image': random_image})
