@@ -81,7 +81,7 @@ application = Flask(__name__)
 CORS(application, 
      supports_credentials=True,
      resources={r"/*": {
-         "origins": ["http://localhost:8080"],
+         "origins": ["*"],
          "methods": ["GET", "POST"],
          "allow_credentials": True
      }})
@@ -217,4 +217,4 @@ def get_similar_image(label):
 
 if __name__ == '__main__':
     initialize_label_to_images()
-    application.run(debug=True)
+    application.run(host='0.0.0.0', port=80, debug=True)

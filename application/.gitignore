@@ -1,6 +1,4 @@
-reddit-pics/
-reddit-pics.tar.xz
-image_recommender/
+
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml

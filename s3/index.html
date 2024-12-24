@@ -6,7 +6,7 @@
     <title>Image Object Detection</title>
 </head>
 <body>
-    <h1>Image Object Detection</h1>
+    <h1>Image Object Detection and Recommender</h1>
     <img id="image" src="" alt="Image will appear here" style="max-width: 80vw; max-height: 80vh; min-height: 80vh;">
     <br><br>
     <button onclick="sendFeedback(1)">Thumbs Up</button>
@@ -26,7 +26,7 @@
         let currentImage = "";
 
         async function fetchImage() {
-            const response = await fetch('http://127.0.0.1:5000/get-image', {
+            const response = await fetch('http://3.95.25.230/get-image', {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -37,7 +37,7 @@
         }
 
         async function sendFeedback(like) {
-            await fetch('http://127.0.0.1:5000/send-feedback', {
+            await fetch('http://3.95.25.230/send-feedback', {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
@@ -47,7 +47,7 @@
         }
 
         async function fetchRecommendedImage() {
-            const response = await fetch('http://127.0.0.1:5000/recommend-next', {
+            const response = await fetch('http://3.95.25.230/recommend-next', {
                 credentials: 'include'
             });
             const data = await response.json();
@@ -73,7 +73,7 @@
             formData.append("image", imageFile, currentImage);
 
             try {
-                const response = await fetch('http://127.0.0.1:5000/analyze-image', {
+                const response = await fetch('http://3.95.25.230/analyze-image', {
                     method: 'POST',
                     credentials: 'include',
                     body: formData
@@ -99,7 +99,7 @@
         }
 
         async function fetchSimilarImage(label) {
-            const response = await fetch(`http://127.0.0.1:5000/get-similar-image/${label}`, {
+            const response = await fetch(`http://3.95.25.230/get-similar-image/${label}`, {
                 credentials: 'include'
             });
             const data = await response.json();
