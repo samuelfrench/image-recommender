@@ -12,6 +12,7 @@ from tqdm import tqdm
 import random
 import uuid
 import os
+import json
 from datetime import datetime, timedelta
 from threading import Lock
 
@@ -59,34 +60,20 @@ embeddings = np.array(list(image_embeddings.values()))
 # Store indexed results for each label
 label_to_images = defaultdict(list)
 
-def initialize_label_to_images():
-    print("Initializing label_to_images dictionary...")
-    pics_dir = 'reddit-pics'
-    if not os.path.exists(pics_dir):
-        print(f"Error: {pics_dir} directory not found")
+def initialize_label_to_images(file_path='label_to_images.json'):
+    """
+    Load the label-to-images dictionary from a JSON file.
+    """
+    global label_to_images
+
+    if not os.path.exists(file_path):
+        print(f"Error: {file_path} not found. Please run the label generation script first.")
         return
 
-    for image_name in tqdm(os.listdir(pics_dir)):
-        if not image_name.lower().endswith(('.png', '.jpg', '.jpeg')):
-            continue
-            
-        try:
-            image_path = os.path.join(pics_dir, image_name)
-            img = load_img(image_path, target_size=(224, 224))
-            img_array = img_to_array(img)
-            img_array = np.expand_dims(img_array, axis=0)
-            img_array = preprocess_input(img_array)
-
-            predictions = mobilenet_model.predict(img_array)
-            decoded_predictions = decode_predictions(predictions, top=5)[0]
-
-            for (label, description, confidence) in decoded_predictions:
-                if confidence > 0.1:  # Only store predictions with >10% confidence
-                    label_to_images[label].append(image_name)
-        except Exception as e:
-            print(f"Error processing {image_name}: {str(e)}")
-
-    print(f"Processed {len(os.listdir(pics_dir))} images")
+    with open(file_path, 'r') as f:
+        label_to_images = json.load(f)
+    
+    print(f"Loaded label-to-image mappings from {file_path}")
     print(f"Found {len(label_to_images)} unique labels")
 
 # Initialize Flask app
