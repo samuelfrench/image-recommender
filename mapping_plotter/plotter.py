@@ -5,7 +5,7 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 from umap import UMAP
 
 # Load embeddings
-embeddings = np.load('../image_embeddings.npy', allow_pickle=True).item()
+embeddings = np.load('../high_fidelity_image_embeddings.npy', allow_pickle=True).item()
 image_names = list(embeddings.keys())
 embedding_vectors = np.array(list(embeddings.values()))
 
@@ -37,13 +37,13 @@ for i, image_name in enumerate(image_names[:100]):  # Limit to 100 images
         ax.add_artist(ab)
 
 # Customize plot appearance
-ax.set_title("Image Embeddings with Thumbnails (Optimized)", fontsize=20)
+ax.set_title("High Fidelity Image Embeddings with Thumbnails (Optimized)", fontsize=20)
 ax.set_xlabel("Dimension 1", fontsize=14)
 ax.set_ylabel("Dimension 2", fontsize=14)
 ax.grid(False)  # Turn off grid for clarity
 
 # Save plot as high-resolution PNG
-output_file = "optimized_image_embeddings.png"
+output_file = "high_fidelity_image_embeddings.png"
 plt.savefig(output_file, format='png', bbox_inches='tight')
 plt.close()
 

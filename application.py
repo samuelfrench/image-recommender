@@ -53,7 +53,7 @@ def get_or_create_session(session_id=None):
         return session
 
 # Load Image Embeddings
-image_embeddings = np.load('image_embeddings.npy', allow_pickle=True).item()
+image_embeddings = np.load('high_fidelity_image_embeddings.npy', allow_pickle=True).item()
 image_names = list(image_embeddings.keys())
 embeddings = np.array(list(image_embeddings.values()))
 
