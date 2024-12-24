@@ -9,13 +9,16 @@ This project uses **TensorFlow** to provide personalized image recommendations b
 
 ## How to Run
 
-### 1. Start the Backend
+### 1. Uncompress Images
+Download (https://drive.google.com/file/d/1KX559Ucd59_zLTQcUMJO20q6-dCW427o/view?usp=sharing) and uncompress reddit-pics.tar.xz to a folder named: reddit-pics
+
+### 2. Start the Backend
 Run the following command to start the Flask backend:
 ```bash
 python app.py
 ```
 
-### 2. Start the Frontend
+### 3. Start the Frontend
 Serve the frontend files using Python's HTTP server:
 ```bash
 python -m http.server 8080
