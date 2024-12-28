@@ -10,7 +10,7 @@ This project uses **TensorFlow** to provide personalized image recommendations b
 ## How to Run
 
 ### 1. Uncompress Images
-Download (https://drive.google.com/file/d/1KX559Ucd59_zLTQcUMJO20q6-dCW427o/view?usp=sharing) and uncompress reddit-pics.tar.xz to a folder named: s3/reddit-pics
+Download (https://drive.google.com/file/d/1KX559Ucd59_zLTQcUMJO20q6-dCW427o/view?usp=sharing) and uncompress `reddit-pics.tar.xz` to a folder named: `s3/static/reddit-pics`
 
 ### 2. Start the Backend
 Install application/requirements.txt file  
@@ -20,7 +20,7 @@ python application/application.py
 ```
 
 ### 3. TODO: Replace frond-end target to local (if running back-end)
-Find-replace: `http://3.95.25.230` with `http://localhost` in `index.html`
+Find-replace: `http://3.95.25.230` with `http://localhost` in `index.html` (Need to dynamically generate and run index.html from parent app)
 
 ### 4. Start the Frontend
 Serve the frontend files using Python's HTTP server:
